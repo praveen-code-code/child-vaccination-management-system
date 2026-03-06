@@ -1,0 +1,237 @@
+{% extends 'vaccine/base.html' %}
+
+{% block title %}{{ title }} - Child Vaccination Management System{% endblock %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-child me-2"></i>
+                    {{ title }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="childForm">
+                    {% csrf_token %}
+                    
+                    <!-- Personal Information -->
+                    <div class="mb-4">
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-user me-2"></i>Personal Information
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">First Name *</label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <div class="text-danger small mt-1">{{ form.first_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">Last Name *</label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <div class="text-danger small mt-1">{{ form.last_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">Date of Birth *</label>
+                                {{ form.date_of_birth }}
+                                {% if form.date_of_birth.errors %}
+                                    <div class="text-danger small mt-1">{{ form.date_of_birth.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.gender.id_for_label }}" class="form-label">Gender *</label>
+                                {{ form.gender }}
+                                {% if form.gender.errors %}
+                                    <div class="text-danger small mt-1">{{ form.gender.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.blood_group.id_for_label }}" class="form-label">Blood Group</label>
+                                {{ form.blood_group }}
+                                {% if form.blood_group.errors %}
+                                    <div class="text-danger small mt-1">{{ form.blood_group.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Parent/Guardian Information -->
+                    <div class="mb-4">
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-user-friends me-2"></i>Parent/Guardian Information
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.parent_name.id_for_label }}" class="form-label">Parent/Guardian Name *</label>
+                                {{ form.parent_name }}
+                                {% if form.parent_name.errors %}
+                                    <div class="text-danger small mt-1">{{ form.parent_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.parent_email.id_for_label }}" class="form-label">Email Address *</label>
+                                {{ form.parent_email }}
+                                {% if form.parent_email.errors %}
+                                    <div class="text-danger small mt-1">{{ form.parent_email.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.parent_phone.id_for_label }}" class="form-label">Phone Number *</label>
+                                {{ form.parent_phone }}
+                                {% if form.parent_phone.errors %}
+                                    <div class="text-danger small mt-1">{{ form.parent_phone.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.emergency_contact.id_for_label }}" class="form-label">Emergency Contact *</label>
+                                {{ form.emergency_contact }}
+                                {% if form.emergency_contact.errors %}
+                                    <div class="text-danger small mt-1">{{ form.emergency_contact.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Address -->
+                    <div class="mb-4">
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-map-marker-alt me-2"></i>Address Information
+                        </h6>
+                        <div class="mb-3">
+                            <label for="{{ form.address.id_for_label }}" class="form-label">Complete Address *</label>
+                            {{ form.address }}
+                            {% if form.address.errors %}
+                                <div class="text-danger small mt-1">{{ form.address.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Medical Information -->
+                    <div class="mb-4">
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-heartbeat me-2"></i>Medical Information
+                        </h6>
+                        <div class="mb-3">
+                            <label for="{{ form.allergies.id_for_label }}" class="form-label">Known Allergies</label>
+                            {{ form.allergies }}
+                            {% if form.allergies.errors %}
+                                <div class="text-danger small mt-1">{{ form.allergies.errors.0 }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">List any known allergies (medications, food, etc.)</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.medical_conditions.id_for_label }}" class="form-label">Medical Conditions</label>
+                            {{ form.medical_conditions }}
+                            {% if form.medical_conditions.errors %}
+                                <div class="text-danger small mt-1">{{ form.medical_conditions.errors.0 }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">List any chronic medical conditions or important health information</small>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'vaccine:child_list' %}" class="btn btn-light">
+                            <i class="fas fa-arrow-left me-2"></i>Back to List
+                        </a>
+                        <div>
+                            <button type="reset" class="btn btn-secondary me-2">
+                                <i class="fas fa-undo me-2"></i>Reset
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>{{ child|yesno:"Update,Save" }} Child
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form validation
+    const form = document.getElementById('childForm');
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Required field validation
+        const requiredFields = form.querySelectorAll('[required]');
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                isValid = false;
+                field.classList.add('is-invalid');
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        // Email validation
+        const emailField = form.querySelector('input[type="email"]');
+        if (emailField && emailField.value) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(emailField.value)) {
+                isValid = false;
+                emailField.classList.add('is-invalid');
+            }
+        }
+        
+        // Phone number validation
+        const phoneFields = form.querySelectorAll('input[name*="phone"], input[name*="contact"]');
+        phoneFields.forEach(field => {
+            if (field.value) {
+                const phoneRegex = /^[\d\s\-\+\(\)]+$/;
+                if (!phoneRegex.test(field.value)) {
+                    isValid = false;
+                    field.classList.add('is-invalid');
+                }
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            // Scroll to first error
+            const firstError = form.querySelector('.is-invalid');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    });
+    
+    // Auto-format phone numbers
+    const phoneInputs = document.querySelectorAll('input[name*="phone"], input[name*="contact"]');
+    phoneInputs.forEach(input => {
+        input.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 0) {
+                if (value.length <= 3) {
+                    value = value;
+                } else if (value.length <= 6) {
+                    value = value.slice(0, 3) + '-' + value.slice(3);
+                } else {
+                    value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6, 10);
+                }
+            }
+            e.target.value = value;
+        });
+    });
+});
+</script>
+{% endblock %}

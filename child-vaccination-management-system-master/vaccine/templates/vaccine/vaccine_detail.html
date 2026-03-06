@@ -1,0 +1,220 @@
+{% extends 'vaccine/base.html' %}
+
+{% block title %}{{ vaccine.name }} - Child Vaccination Management System{% endblock %}
+
+{% block page_title %}Vaccine Details{% endblock %}
+
+{% block content %}
+<!-- Vaccine Header -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="avatar-lg bg-success rounded-circle d-flex align-items-center justify-content-center text-white me-3">
+                        <i class="fas fa-pills fa-2x"></i>
+                    </div>
+                    <div>
+                        <h3 class="mb-1">{{ vaccine.name }}</h3>
+                        <p class="text-muted mb-0">{{ vaccine.manufacturer }}</p>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <p class="mb-1"><strong>Recommended Age:</strong> {{ vaccine.recommended_age }}</p>
+                        <p class="mb-1"><strong>Dosage:</strong> {{ vaccine.dosage }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="mb-1"><strong>Route:</strong> {{ vaccine.route }}</p>
+                        <p class="mb-1"><strong>Status:</strong> 
+                            {% if vaccine.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="mb-1"><strong>Added:</strong> {{ vaccine.created_at|date:"M d, Y" }}</p>
+                        <p class="mb-1"><strong>Updated:</strong> {{ vaccine.updated_at|date:"M d, Y" }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="btn-group-vertical">
+                    <a href="{% url 'vaccine:vaccine_update' vaccine.pk %}" class="btn btn-outline-primary mb-2">
+                        <i class="fas fa-edit me-2"></i>Edit Vaccine
+                    </a>
+                    <a href="{% url 'vaccine:schedule_create' %}?vaccine={{ vaccine.pk }}" class="btn btn-outline-success mb-2">
+                        <i class="fas fa-calendar-plus me-2"></i>Schedule Vaccination
+                    </a>
+                    <a href="{% url 'vaccine:record_create' %}?vaccine={{ vaccine.pk }}" class="btn btn-outline-info">
+                        <i class="fas fa-file-medical me-2"></i>Add Record
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Description -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Description</h5>
+    </div>
+    <div class="card-body">
+        <p>{{ vaccine.description }}</p>
+    </div>
+</div>
+
+<!-- Storage and Safety Information -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-snowflake me-2"></i>Storage Requirements</h6>
+            </div>
+            <div class="card-body">
+                <p>{{ vaccine.storage_requirements|default:"No specific storage requirements specified" }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Safety Information</h6>
+            </div>
+            <div class="card-body">
+                <h6 class="text-primary mb-2">Side Effects</h6>
+                <p class="mb-3">{{ vaccine.side_effects|default:"No side effects information available" }}</p>
+                
+                <h6 class="text-primary mb-2">Contraindications</h6>
+                <p>{{ vaccine.contraindications|default:"No contraindications specified" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Schedules -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-calendar-check me-2"></i>Recent Schedules</h5>
+        <a href="{% url 'vaccine:schedule_create' %}?vaccine={{ vaccine.pk }}" class="btn btn-sm btn-primary">
+            <i class="fas fa-plus me-1"></i>Schedule Vaccination
+        </a>
+    </div>
+    <div class="card-body">
+        {% if schedules %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Child</th>
+                            <th>Scheduled Date</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for schedule in schedules %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'vaccine:child_detail' schedule.child.pk %}" class="text-decoration-none">
+                                    {{ schedule.child.first_name }} {{ schedule.child.last_name }}
+                                </a>
+                            </td>
+                            <td>{{ schedule.scheduled_date|date:"M d, Y" }}</td>
+                            <td>
+                                {% if schedule.status == 'SCHEDULED' %}
+                                    <span class="badge bg-primary">Scheduled</span>
+                                {% elif schedule.status == 'COMPLETED' %}
+                                    <span class="badge bg-success">Completed</span>
+                                {% elif schedule.status == 'MISSED' %}
+                                    <span class="badge bg-danger">Missed</span>
+                                {% elif schedule.status == 'POSTPONED' %}
+                                    <span class="badge bg-warning">Postponed</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Cancelled</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ schedule.notes|default:"-"|truncatechars:50 }}</td>
+                            <td>
+                                <a href="{% url 'vaccine:schedule_update' schedule.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                <p class="text-muted mb-3">No vaccination schedules found</p>
+                <a href="{% url 'vaccine:schedule_create' %}?vaccine={{ vaccine.pk }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Schedule First Vaccination
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Vaccination Records -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-file-medical me-2"></i>Vaccination Records</h5>
+        <a href="{% url 'vaccine:record_create' %}?vaccine={{ vaccine.pk }}" class="btn btn-sm btn-primary">
+            <i class="fas fa-plus me-1"></i>Add Record
+        </a>
+    </div>
+    <div class="card-body">
+        {% if records %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Child</th>
+                            <th>Administered Date</th>
+                            <th>Healthcare Provider</th>
+                            <th>Clinic</th>
+                            <th>Batch Number</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in records %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'vaccine:child_detail' record.child.pk %}" class="text-decoration-none">
+                                    {{ record.child.first_name }} {{ record.child.last_name }}
+                                </a>
+                            </td>
+                            <td>{{ record.administered_date|date:"M d, Y" }}</td>
+                            <td>{{ record.administering_healthcare_provider }}</td>
+                            <td>{{ record.clinic_name }}</td>
+                            <td>{{ record.batch_number }}</td>
+                            <td>
+                                <a href="{% url 'vaccine:record_update' record.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-file-medical fa-3x text-muted mb-3"></i>
+                <p class="text-muted mb-3">No vaccination records found</p>
+                <a href="{% url 'vaccine:record_create' %}?vaccine={{ vaccine.pk }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Add First Record
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

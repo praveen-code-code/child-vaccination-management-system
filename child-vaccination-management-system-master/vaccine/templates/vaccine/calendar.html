@@ -1,0 +1,233 @@
+{% extends 'vaccine/base.html' %}
+
+{% block title %}Calendar - Child Vaccination Management System{% endblock %}
+
+{% block page_title %}Vaccination Calendar{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-1">Vaccination Calendar</h4>
+        <p class="text-muted mb-0">View and manage vaccination schedules by date</p>
+    </div>
+    <div class="d-flex align-items-center">
+        <div class="btn-group me-3">
+            <a href="?year={{ prev_year }}&month={{ prev_month }}" class="btn btn-outline-primary">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+            <button class="btn btn-primary" disabled>
+                {{ month_name }} {{ year }}
+            </button>
+            <a href="?year={{ next_year }}&month={{ next_month }}" class="btn btn-outline-primary">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        </div>
+        <a href="{% url 'vaccine:schedule_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Schedule Vaccination
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="calendar-container">
+            <!-- Calendar Header -->
+            <div class="calendar-header">
+                <div class="row">
+                    <div class="col text-center fw-bold">Sunday</div>
+                    <div class="col text-center fw-bold">Monday</div>
+                    <div class="col text-center fw-bold">Tuesday</div>
+                    <div class="col text-center fw-bold">Wednesday</div>
+                    <div class="col text-center fw-bold">Thursday</div>
+                    <div class="col text-center fw-bold">Friday</div>
+                    <div class="col text-center fw-bold">Saturday</div>
+                </div>
+            </div>
+            
+            <!-- Calendar Days -->
+            <div class="calendar-days" id="calendarDays">
+                <!-- Calendar will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Events Modal -->
+<div class="modal fade" id="eventsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Vaccination Events</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="eventsModalBody">
+                <!-- Events will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="{% url 'vaccine:schedule_create' %}" class="btn btn-primary">Schedule New Vaccination</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const schedules = {{ schedules_json|default:"[]" }};
+    const year = {{ year }};
+    const month = {{ month }};
+    
+    renderCalendar(year, month, schedules);
+});
+
+function renderCalendar(year, month, schedules) {
+    const firstDay = new Date(year, month - 1, 1).getDay();
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const today = new Date();
+    
+    let html = '<div class="row">';
+    
+    // Empty cells for days before month starts
+    for (let i = 0; i < firstDay; i++) {
+        html += '<div class="col calendar-day empty"></div>';
+    }
+    
+    // Days of month
+    for (let day = 1; day <= daysInMonth; day++) {
+        const currentDate = new Date(year, month - 1, day);
+        const dateStr = year + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+        const isToday = currentDate.toDateString() === today.toDateString();
+        const daySchedules = schedules.filter(s => s.scheduled_date === dateStr);
+        
+        let dayClass = 'col calendar-day';
+        if (isToday) dayClass += ' today';
+        if (daySchedules.length > 0) dayClass += ' has-events';
+        
+        html += '<div class="' + dayClass + '" data-date="' + dateStr + '" onclick="showEvents(\'' + dateStr + '\')">';
+        html += '<div class="calendar-date">' + day + '</div>';
+        if (daySchedules.length > 0) {
+            html += '<div class="event-count">' + daySchedules.length + ' event' + (daySchedules.length > 1 ? 's' : '') + '</div>';
+        }
+        html += '</div>';
+        
+        // Start new row after Saturday
+        if ((firstDay + day - 1) % 7 === 6) {
+            html += '</div><div class="row">';
+        }
+    }
+    
+    // Close the last row
+    html += '</div>';
+    
+    document.getElementById('calendarDays').innerHTML = html;
+}
+
+function showEvents(date) {
+    const schedules = {{ schedules_json|default:"[]" }};
+    const daySchedules = schedules.filter(s => s.scheduled_date === date);
+    
+    let html = '';
+    if (daySchedules.length > 0) {
+        html = '<div class="list-group">';
+        daySchedules.forEach(schedule => {
+            html += '<div class="list-group-item">';
+            html += '<div class="d-flex justify-content-between align-items-center">';
+            html += '<div>';
+            html += '<h6 class="mb-1">' + schedule.child_name + '</h6>';
+            html += '<p class="mb-1">' + schedule.vaccine_name + '</p>';
+            html += '<small class="text-muted">' + (schedule.notes || 'No notes') + '</small>';
+            html += '</div>';
+            html += '<div>';
+            html += '<span class="badge bg-primary">' + schedule.status + '</span>';
+            html += '<div class="btn-group mt-2">';
+            html += '<a href="/schedules/' + schedule.id + '/edit/" class="btn btn-sm btn-outline-primary">Edit</a>';
+            html += '<a href="/records/add/?schedule=' + schedule.id + '" class="btn btn-sm btn-outline-success">Complete</a>';
+            html += '</div>';
+            html += '</div>';
+            html += '</div>';
+            html += '</div>';
+        });
+        html += '</div>';
+    } else {
+        html = '<p class="text-muted">No vaccination events scheduled for this date.</p>';
+    }
+    
+    document.getElementById('eventsModalBody').innerHTML = html;
+    const modal = new bootstrap.Modal(document.getElementById('eventsModal'));
+    modal.show();
+}
+</script>
+
+<style>
+.calendar-header {
+    background: var(--light-bg);
+    padding: 15px;
+    border-radius: 10px 10px 0 0;
+    font-weight: 600;
+}
+
+.calendar-days {
+    padding: 15px;
+}
+
+.calendar-day {
+    min-height: 80px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 8px;
+    margin: 2px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.calendar-day:hover {
+    background: var(--light-bg);
+    transform: scale(1.02);
+    box-shadow: var(--shadow-md);
+}
+
+.calendar-day.today {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.calendar-day.has-events {
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(79, 70, 229, 0.05));
+    border-color: var(--primary-light);
+}
+
+.calendar-day.empty {
+    border: none;
+    cursor: default;
+}
+
+.calendar-day.empty:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.calendar-date {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.event-count {
+    font-size: 11px;
+    background: var(--primary-color);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-top: 4px;
+    display: inline-block;
+}
+
+.calendar-day.today .event-count {
+    background: white;
+    color: var(--primary-color);
+}
+</style>
+{% endblock %}

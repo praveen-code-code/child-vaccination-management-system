@@ -1,0 +1,212 @@
+{% extends 'vaccine/base.html' %}
+
+{% block title %}{{ child.first_name }} {{ child.last_name }} - Child Vaccination Management System{% endblock %}
+
+{% block page_title %}Child Details{% endblock %}
+
+{% block content %}
+<!-- Child Profile Header -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-2 text-center">
+                <div class="avatar-xl bg-primary rounded-circle d-flex align-items-center justify-content-center text-white mx-auto mb-3">
+                    <h2 class="mb-0">{{ child.first_name.0 }}{{ child.last_name.0 }}</h2>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h3 class="mb-2">{{ child.first_name }} {{ child.last_name }}</h3>
+                <p class="text-muted mb-2">
+                    <i class="fas fa-birthday-cake me-2"></i>{{ child.date_of_birth|date:"F d, Y" }} 
+                    <span class="badge bg-info ms-2">{{ child.age }} years old</span>
+                    <span class="badge bg-secondary ms-1">{{ child.get_gender_display }}</span>
+                </p>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <p class="mb-1"><strong>Blood Group:</strong> {{ child.blood_group|default:"Not specified" }}</p>
+                        <p class="mb-1"><strong>Parent:</strong> {{ child.parent_name }}</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <p class="mb-1"><strong>Phone:</strong> {{ child.parent_phone }}</p>
+                        <p class="mb-1"><strong>Email:</strong> {{ child.parent_email }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="btn-group-vertical">
+                    <a href="{% url 'vaccine:child_update' child.pk %}" class="btn btn-outline-primary mb-2">
+                        <i class="fas fa-edit me-2"></i>Edit Profile
+                    </a>
+                    <a href="{% url 'vaccine:schedule_create' %}?child={{ child.pk }}" class="btn btn-outline-success mb-2">
+                        <i class="fas fa-calendar-plus me-2"></i>Schedule Vaccination
+                    </a>
+                    <a href="{% url 'vaccine:record_create' %}?child={{ child.pk }}" class="btn btn-outline-info">
+                        <i class="fas fa-file-medical me-2"></i>Add Record
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Medical Information -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-heartbeat me-2"></i>Medical Information</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="text-primary mb-3">Allergies</h6>
+                <p class="mb-3">{{ child.allergies|default:"No known allergies recorded" }}</p>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-primary mb-3">Medical Conditions</h6>
+                <p class="mb-3">{{ child.medical_conditions|default:"No medical conditions recorded" }}</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <h6 class="text-primary mb-3">Contact Information</h6>
+                <p class="mb-2"><strong>Address:</strong> {{ child.address }}</p>
+                <p class="mb-0"><strong>Emergency Contact:</strong> {{ child.emergency_contact }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vaccination Schedule -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-calendar-check me-2"></i>Vaccination Schedule</h5>
+        <a href="{% url 'vaccine:schedule_create' %}?child={{ child.pk }}" class="btn btn-sm btn-primary">
+            <i class="fas fa-plus me-1"></i>Add Schedule
+        </a>
+    </div>
+    <div class="card-body">
+        {% if schedules %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Vaccine</th>
+                            <th>Scheduled Date</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for schedule in schedules %}
+                        <tr>
+                            <td>
+                                <div class="fw-medium">{{ schedule.vaccine.name }}</div>
+                                <small class="text-muted">{{ schedule.vaccine.manufacturer }}</small>
+                            </td>
+                            <td>
+                                {% if schedule.scheduled_date == today %}
+                                    <span class="text-warning fw-medium">Today</span>
+                                {% else %}
+                                    {{ schedule.scheduled_date|date:"M d, Y" }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if schedule.status == 'SCHEDULED' %}
+                                    <span class="badge bg-primary">Scheduled</span>
+                                {% elif schedule.status == 'COMPLETED' %}
+                                    <span class="badge bg-success">Completed</span>
+                                {% elif schedule.status == 'MISSED' %}
+                                    <span class="badge bg-danger">Missed</span>
+                                {% elif schedule.status == 'POSTPONED' %}
+                                    <span class="badge bg-warning">Postponed</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Cancelled</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ schedule.notes|default:"-"|truncatechars:50 }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'vaccine:schedule_update' schedule.pk %}" class="btn btn-sm btn-outline-primary" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% if schedule.status == 'SCHEDULED' %}
+                                        <a href="{% url 'vaccine:record_create' %}?schedule={{ schedule.pk }}" class="btn btn-sm btn-outline-success" title="Mark as Completed">
+                                            <i class="fas fa-check"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                <p class="text-muted mb-3">No vaccination schedules found</p>
+                <a href="{% url 'vaccine:schedule_create' %}?child={{ child.pk }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Schedule First Vaccination
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Vaccination Records -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-file-medical me-2"></i>Vaccination Records</h5>
+        <a href="{% url 'vaccine:record_create' %}?child={{ child.pk }}" class="btn btn-sm btn-primary">
+            <i class="fas fa-plus me-1"></i>Add Record
+        </a>
+    </div>
+    <div class="card-body">
+        {% if records %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Vaccine</th>
+                            <th>Administered Date</th>
+                            <th>Healthcare Provider</th>
+                            <th>Clinic</th>
+                            <th>Batch Number</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in records %}
+                        <tr>
+                            <td>
+                                <div class="fw-medium">{{ record.vaccine.name }}</div>
+                                <small class="text-muted">{{ record.vaccine.dosage }}</small>
+                            </td>
+                            <td>{{ record.administered_date|date:"M d, Y" }}</td>
+                            <td>{{ record.administering_healthcare_provider }}</td>
+                            <td>{{ record.clinic_name }}</td>
+                            <td>{{ record.batch_number }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'vaccine:record_update' record.pk %}" class="btn btn-sm btn-outline-primary" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-file-medical fa-3x text-muted mb-3"></i>
+                <p class="text-muted mb-3">No vaccination records found</p>
+                <a href="{% url 'vaccine:record_create' %}?child={{ child.pk }}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Add First Record
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

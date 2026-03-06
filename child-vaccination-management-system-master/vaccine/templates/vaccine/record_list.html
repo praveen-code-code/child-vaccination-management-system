@@ -1,0 +1,114 @@
+{% extends 'vaccine/base.html' %}
+
+{% block title %}Vaccination Records - Child Vaccination Management System{% endblock %}
+
+{% block page_title %}Vaccination Records{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-1">Vaccination Records</h4>
+        <p class="text-muted mb-0">Track completed vaccinations and medical history</p>
+    </div>
+    <a href="{% url 'vaccine:record_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Add Record
+    </a>
+</div>
+
+<!-- Search -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-9">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" name="q" class="form-control" placeholder="Search by child name, vaccine, or clinic..." value="{{ query }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-2"></i>Search
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Records List -->
+<div class="card">
+    <div class="card-body">
+        {% if records %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Child</th>
+                            <th>Vaccine</th>
+                            <th>Administered Date</th>
+                            <th>Healthcare Provider</th>
+                            <th>Clinic</th>
+                            <th>Batch Number</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in records %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center text-white me-2">
+                                        {{ record.child.first_name.0 }}{{ record.child.last_name.0 }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-medium">{{ record.child.first_name }} {{ record.child.last_name }}</div>
+                                        <small class="text-muted">{{ record.child.age }} years</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="fw-medium">{{ record.vaccine.name }}</div>
+                                <small class="text-muted">{{ record.vaccine.dosage }}</small>
+                            </td>
+                            <td>{{ record.administered_date|date:"M d, Y" }}</td>
+                            <td>{{ record.administering_healthcare_provider }}</td>
+                            <td>{{ record.clinic_name }}</td>
+                            <td>
+                                <code>{{ record.batch_number }}</code>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'vaccine:record_update' record.pk %}" class="btn btn-sm btn-outline-primary" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-outline-info" onclick="printRecord()" title="Print">
+                                        <i class="fas fa-print"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-file-medical fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">No vaccination records found</h4>
+                <p class="text-muted">Start by adding your first vaccination record</p>
+                <a href="{% url 'vaccine:record_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Add First Record
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function printRecord(recordId) {
+    // Create a print-friendly version of the record
+    window.print();
+}
+</script>
+{% endblock %}

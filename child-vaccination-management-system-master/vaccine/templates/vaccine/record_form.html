@@ -1,0 +1,192 @@
+{% extends 'vaccine/base.html' %}
+
+{% block title %}{{ title }} - Child Vaccination Management System{% endblock %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-medical me-2"></i>
+                    {{ title }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Vaccination Information -->
+                    <div class="mb-4">
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-syringe me-2"></i>Vaccination Information
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.child.id_for_label }}" class="form-label">Child *</label>
+                                {{ form.child }}
+                                {% if form.child.errors %}
+                                    <div class="text-danger small mt-1">{{ form.child.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.vaccine.id_for_label }}" class="form-label">Vaccine *</label>
+                                {{ form.vaccine }}
+                                {% if form.vaccine.errors %}
+                                    <div class="text-danger small mt-1">{{ form.vaccine.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.administered_date.id_for_label }}" class="form-label">Administered Date *</label>
+                                {{ form.administered_date }}
+                                {% if form.administered_date.errors %}
+                                    <div class="text-danger small mt-1">{{ form.administered_date.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.batch_number.id_for_label }}" class="form-label">Batch Number *</label>
+                                {{ form.batch_number }}
+                                {% if form.batch_number.errors %}
+                                    <div class="text-danger small mt-1">{{ form.batch_number.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Healthcare Provider Information -->
+                    <div class="mb-4">
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-user-md me-2"></i>Healthcare Provider Information
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.administering_healthcare_provider.id_for_label }}" class="form-label">Healthcare Provider *</label>
+                                {{ form.administering_healthcare_provider }}
+                                {% if form.administering_healthcare_provider.errors %}
+                                    <div class="text-danger small mt-1">{{ form.administering_healthcare_provider.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.clinic_name.id_for_label }}" class="form-label">Clinic/Hospital Name *</label>
+                                {{ form.clinic_name }}
+                                {% if form.clinic_name.errors %}
+                                    <div class="text-danger small mt-1">{{ form.clinic_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Medical Information -->
+                    <div class="mb-4">
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-heartbeat me-2"></i>Medical Information
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.next_dose_date.id_for_label }}" class="form-label">Next Dose Date</label>
+                                {{ form.next_dose_date }}
+                                {% if form.next_dose_date.errors %}
+                                    <div class="text-danger small mt-1">{{ form.next_dose_date.errors.0 }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">If this vaccine requires multiple doses</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.adverse_reactions.id_for_label }}" class="form-label">Adverse Reactions</label>
+                            {{ form.adverse_reactions }}
+                            {% if form.adverse_reactions.errors %}
+                                <div class="text-danger small mt-1">{{ form.adverse_reactions.errors.0 }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">Record any side effects or adverse reactions</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">Additional Notes</label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <div class="text-danger small mt-1">{{ form.notes.errors.0 }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">Any additional information about the vaccination</small>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'vaccine:record_list' %}" class="btn btn-light">
+                            <i class="fas fa-arrow-left me-2"></i>Back to List
+                        </a>
+                        <div>
+                            <button type="reset" class="btn btn-secondary me-2">
+                                <i class="fas fa-undo me-2"></i>Reset
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>{{ record|yesno:"Update,Save" }} Record
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-populate from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    if (urlParams.get('child')) {
+        document.querySelector('select[name="child"]').value = urlParams.get('child');
+    }
+    
+    if (urlParams.get('vaccine')) {
+        document.querySelector('select[name="vaccine"]').value = urlParams.get('vaccine');
+    }
+    
+    if (urlParams.get('schedule')) {
+        // If coming from a schedule, pre-populate and mark as completed
+        fetch(`/api/schedule/${urlParams.get('schedule')}/`)
+            .then(response => response.json())
+            .then(data => {
+                document.querySelector('select[name="child"]').value = data.child;
+                document.querySelector('select[name="vaccine"]').value = data.vaccine;
+                document.querySelector('input[name="administered_date"]').value = data.scheduled_date;
+            })
+            .catch(error => console.error('Error loading schedule data:', error));
+    }
+    
+    // Form validation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const requiredFields = form.querySelectorAll('[required]');
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                isValid = false;
+                field.classList.add('is-invalid');
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            // Scroll to first error
+            const firstError = form.querySelector('.is-invalid');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

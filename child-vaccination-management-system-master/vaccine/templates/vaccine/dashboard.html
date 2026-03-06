@@ -1,0 +1,207 @@
+{% extends 'vaccine/base.html' %}
+
+{% block title %}Dashboard - Child Vaccination Management System{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row fade-in-up">
+    <!-- Stats Cards -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stats-card">
+            <div class="stats-icon bg-primary bg-gradient text-white">
+                <i class="fas fa-child"></i>
+            </div>
+            <h3 class="mb-2">{{ total_children }}</h3>
+            <p class="text-muted mb-0">Total Children</p>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stats-card">
+            <div class="stats-icon bg-success bg-gradient text-white">
+                <i class="fas fa-pills"></i>
+            </div>
+            <h3 class="mb-2">{{ total_vaccines }}</h3>
+            <p class="text-muted mb-0">Active Vaccines</p>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stats-card">
+            <div class="stats-icon bg-warning bg-gradient text-white">
+                <i class="fas fa-calendar-day"></i>
+            </div>
+            <h3 class="mb-2">{{ scheduled_today }}</h3>
+            <p class="text-muted mb-0">Scheduled Today</p>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stats-card">
+            <div class="stats-icon bg-info bg-gradient text-white">
+                <i class="fas fa-clock"></i>
+            </div>
+            <h3 class="mb-2">{{ upcoming_vaccinations }}</h3>
+            <p class="text-muted mb-0">This Week</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Vaccination Records -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Vaccination Records</h5>
+                <a href="{% url 'vaccine:record_list' %}" class="btn btn-sm btn-light">View All</a>
+            </div>
+            <div class="card-body">
+                {% if recent_records %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Child</th>
+                                    <th>Vaccine</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in recent_records %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center text-white me-2">
+                                                {{ record.child.first_name.0 }}{{ record.child.last_name.0 }}
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium">{{ record.child.first_name }} {{ record.child.last_name }}</div>
+                                                <small class="text-muted">{{ record.child.age }} years</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ record.vaccine.name }}</td>
+                                    <td>{{ record.administered_date|date:"M d, Y" }}</td>
+                                    <td><span class="badge bg-success">Completed</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-syringe fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No vaccination records yet</p>
+                        <a href="{% url 'vaccine:record_create' %}" class="btn btn-primary">Add First Record</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Vaccinations -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Upcoming Vaccinations</h5>
+                <a href="{% url 'vaccine:schedule_list' %}" class="btn btn-sm btn-light">View All</a>
+            </div>
+            <div class="card-body">
+                {% if upcoming_schedules %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Child</th>
+                                    <th>Vaccine</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for schedule in upcoming_schedules %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-sm bg-info rounded-circle d-flex align-items-center justify-content-center text-white me-2">
+                                                {{ schedule.child.first_name.0 }}{{ schedule.child.last_name.0 }}
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium">{{ schedule.child.first_name }} {{ schedule.child.last_name }}</div>
+                                                <small class="text-muted">{{ schedule.child.age }} years</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ schedule.vaccine.name }}</td>
+                                    <td>
+                                        {% if schedule.scheduled_date == today %}
+                                            <span class="text-warning fw-medium">Today</span>
+                                        {% else %}
+                                            {{ schedule.scheduled_date|date:"M d, Y" }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if schedule.scheduled_date == today %}
+                                            <span class="badge bg-warning">Today</span>
+                                        {% else %}
+                                            <span class="badge bg-primary">Scheduled</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No upcoming vaccinations scheduled</p>
+                        <a href="{% url 'vaccine:schedule_create' %}" class="btn btn-primary">Schedule Vaccination</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'vaccine:child_create' %}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
+                            <i class="fas fa-user-plus fa-2x mb-2"></i>
+                            Add New Child
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'vaccine:vaccine_create' %}" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
+                            <i class="fas fa-plus-circle fa-2x mb-2"></i>
+                            Add New Vaccine
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'vaccine:schedule_create' %}" class="btn btn-outline-warning w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
+                            <i class="fas fa-calendar-plus fa-2x mb-2"></i>
+                            Schedule Vaccination
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'vaccine:record_create' %}" class="btn btn-outline-info w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
+                            <i class="fas fa-file-medical fa-2x mb-2"></i>
+                            Add Record
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

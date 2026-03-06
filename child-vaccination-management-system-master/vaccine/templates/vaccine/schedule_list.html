@@ -1,0 +1,129 @@
+{% extends 'vaccine/base.html' %}
+
+{% block title %}Vaccination Schedules - Child Vaccination Management System{% endblock %}
+
+{% block page_title %}Vaccination Schedules{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-1">Vaccination Schedules</h4>
+        <p class="text-muted mb-0">Manage and track vaccination appointments</p>
+    </div>
+    <a href="{% url 'vaccine:schedule_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Schedule Vaccination
+    </a>
+</div>
+
+<!-- Search and Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-5">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" name="q" class="form-control" placeholder="Search by child name or vaccine..." value="{{ query }}">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <select name="status" class="form-select">
+                    <option value="">All Status</option>
+                    {% for status_value, status_label in status_choices %}
+                        <option value="{{ status_value }}" {% if status_filter == status_value %}selected{% endif %}>{{ status_label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-filter me-2"></i>Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Schedules List -->
+<div class="card">
+    <div class="card-body">
+        {% if schedules %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Child</th>
+                            <th>Vaccine</th>
+                            <th>Scheduled Date</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for schedule in schedules %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center text-white me-2">
+                                        {{ schedule.child.first_name.0 }}{{ schedule.child.last_name.0 }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-medium">{{ schedule.child.first_name }} {{ schedule.child.last_name }}</div>
+                                        <small class="text-muted">{{ schedule.child.age }} years</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="fw-medium">{{ schedule.vaccine.name }}</div>
+                                <small class="text-muted">{{ schedule.vaccine.manufacturer }}</small>
+                            </td>
+                            <td>
+                                {% if schedule.scheduled_date == today %}
+                                    <span class="text-warning fw-medium">Today</span>
+                                {% else %}
+                                    {{ schedule.scheduled_date|date:"M d, Y" }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if schedule.status == 'SCHEDULED' %}
+                                    <span class="badge bg-primary">Scheduled</span>
+                                {% elif schedule.status == 'COMPLETED' %}
+                                    <span class="badge bg-success">Completed</span>
+                                {% elif schedule.status == 'MISSED' %}
+                                    <span class="badge bg-danger">Missed</span>
+                                {% elif schedule.status == 'POSTPONED' %}
+                                    <span class="badge bg-warning">Postponed</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Cancelled</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ schedule.notes|default:"-"|truncatechars:50 }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'vaccine:schedule_update' schedule.pk %}" class="btn btn-sm btn-outline-primary" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% if schedule.status == 'SCHEDULED' %}
+                                        <a href="{% url 'vaccine:record_create' %}?schedule={{ schedule.pk }}" class="btn btn-sm btn-outline-success" title="Mark as Completed">
+                                            <i class="fas fa-check"></i>
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">No vaccination schedules found</h4>
+                <p class="text-muted">Start by scheduling your first vaccination</p>
+                <a href="{% url 'vaccine:schedule_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Schedule First Vaccination
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
