@@ -57,6 +57,7 @@ def forgot_password_view(request):
         email = request.POST.get('email')
         if email:
             try:
+                from django.contrib.auth.models import User
                 user = User.objects.get(email=email)
                 messages.success(request, f'Password reset instructions have been sent to {email}')
                 return redirect('vaccine:login')
@@ -136,7 +137,7 @@ def child_create(request):
         if form.is_valid():
             child = form.save()
             messages.success(request, f'Child {child.first_name} {child.last_name} has been added successfully.')
-            return redirect('child_detail', pk=child.pk)
+            return redirect('vaccine:child_detail', pk=child.pk)
     else:
         form = ChildForm()
     
@@ -150,7 +151,7 @@ def child_update(request, pk):
         if form.is_valid():
             child = form.save()
             messages.success(request, f'Child {child.first_name} {child.last_name} has been updated successfully.')
-            return redirect('child_detail', pk=child.pk)
+            return redirect('vaccine:child_detail', pk=child.pk)
     else:
         form = ChildForm(instance=child)
     
@@ -162,7 +163,7 @@ def child_delete(request, pk):
     if request.method == 'POST':
         child.delete()
         messages.success(request, f'Child {child.first_name} {child.last_name} has been deleted successfully.')
-        return redirect('child_list')
+        return redirect('vaccine:child_list')
     
     return render(request, 'vaccine/child_confirm_delete.html', {'child': child})
 
@@ -204,7 +205,7 @@ def vaccine_create(request):
         if form.is_valid():
             vaccine = form.save()
             messages.success(request, f'Vaccine {vaccine.name} has been added successfully.')
-            return redirect('vaccine_detail', pk=vaccine.pk)
+            return redirect('vaccine:vaccine_detail', pk=vaccine.pk)
     else:
         form = VaccineForm()
     
@@ -218,7 +219,7 @@ def vaccine_update(request, pk):
         if form.is_valid():
             vaccine = form.save()
             messages.success(request, f'Vaccine {vaccine.name} has been updated successfully.')
-            return redirect('vaccine_detail', pk=vaccine.pk)
+            return redirect('vaccine:vaccine_detail', pk=vaccine.pk)
     else:
         form = VaccineForm(instance=vaccine)
     
@@ -263,7 +264,7 @@ def schedule_create(request):
         if form.is_valid():
             schedule = form.save()
             messages.success(request, f'Vaccination schedule for {schedule.child} has been created successfully.')
-            return redirect('schedule_list')
+            return redirect('vaccine:schedule_list')
     else:
         form = VaccinationScheduleForm()
     
@@ -277,7 +278,7 @@ def schedule_update(request, pk):
         if form.is_valid():
             schedule = form.save()
             messages.success(request, f'Vaccination schedule for {schedule.child} has been updated successfully.')
-            return redirect('schedule_list')
+            return redirect('vaccine:schedule_list')
     else:
         form = VaccinationScheduleForm(instance=schedule)
     
@@ -311,7 +312,7 @@ def record_create(request):
         if form.is_valid():
             record = form.save()
             messages.success(request, f'Vaccination record for {record.child} has been created successfully.')
-            return redirect('record_list')
+            return redirect('vaccine:record_list')
     else:
         form = VaccinationRecordForm()
     
@@ -325,7 +326,7 @@ def record_update(request, pk):
         if form.is_valid():
             record = form.save()
             messages.success(request, f'Vaccination record for {record.child} has been updated successfully.')
-            return redirect('record_list')
+            return redirect('vaccine:record_list')
     else:
         form = VaccinationRecordForm(instance=record)
     
@@ -342,7 +343,6 @@ def calendar_view(request):
         scheduled_date__month=month
     ).select_related('child', 'vaccine')
     
-    # Prepare schedules data for JavaScript
     schedules_json = []
     for schedule in schedules:
         schedules_json.append({
